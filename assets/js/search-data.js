@@ -431,16 +431,22 @@ ninja.data = [{
           window.location.href = "/blog/2015/formatting-and-links/";
         
       },
-    },{id: "news-a-simple-inline-announcement",
-          title: 'A simple inline announcement.',
+    },{id: "news-a-new-paper-co-located-olci-optical-imagery-and-sar-altimetry-from-sentinel-3-for-enhanced-arctic-spring-sea-ice-surface-classification-got-accepted-at-frontiers-in-remote-sensing",
+          title: 'A new paper ‘Co-located OLCI optical imagery and SAR altimetry from Sentinel-3 for...',
           description: "",
-          section: "News",},{id: "news-a-long-announcement-with-details",
-          title: 'A long announcement with details',
+          section: "News",},{id: "news-i-attended-the-european-geosciences-union-egu-general-assembly-2024-in-vienna-austria",
+          title: 'I attended the European Geosciences Union (EGU) General Assembly 2024 in Vienna, Austria....',
+          description: "",
+          section: "News",},{id: "news-i-attended-the-30-years-of-progress-in-radar-altimetry-symposium-in-montpellier-france",
+          title: 'I attended the “30 Years of Progress in Radar Altimetry” Symposium in Montpellier,...',
+          description: "",
+          section: "News",},{id: "news-announcement-2",
+          title: 'Announcement_2',
           description: "",
           section: "News",handler: () => {
               window.location.href = "/news/announcement_2/";
-            },},{id: "news-a-simple-inline-announcement-with-markdown-emoji-sparkles-smile",
-          title: 'A simple inline announcement with Markdown emoji! :sparkles: :smile:',
+            },},{id: "news-a-new-paper-deep-random-features-for-scalable-interpolation-of-spatiotemporal-data-got-accepted-in-iclr-2025",
+          title: 'A new paper ‘Deep Random Features for Scalable Interpolation of Spatiotemporal Data’ got...',
           description: "",
           section: "News",},{id: "projects-project-1",
           title: 'project 1',
