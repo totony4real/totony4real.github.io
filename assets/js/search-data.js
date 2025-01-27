@@ -445,7 +445,7 @@ ninja.data = [{
           description: "",
           section: "News",handler: () => {
               window.location.href = "/news/announcement_2/";
-            },},{id: "news-a-new-paper-deep-random-features-for-scalable-interpolation-of-spatiotemporal-data-got-accepted-in-iclr-2025",
+            },},{id: "news-a-new-paper-deep-random-features-for-scalable-interpolation-of-spatiotemporal-data-got-accepted-at-iclr-2025",
           title: 'A new paper ‘Deep Random Features for Scalable Interpolation of Spatiotemporal Data’ got...',
           description: "",
           section: "News",},{id: "projects-project-1",
