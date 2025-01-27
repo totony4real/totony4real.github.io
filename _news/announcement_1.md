@@ -5,4 +5,4 @@ inline: true
 related_posts: false
 ---
 
-A new paper **‘Deep Random Features for Scalable Interpolation of Spatiotemporal Data’** got accepted in ***ICLR 2025***! 🎉
+A new paper **‘Deep Random Features for Scalable Interpolation of Spatiotemporal Data’** got accepted at ***ICLR 2025***! 🎉
