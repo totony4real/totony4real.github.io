@@ -431,11 +431,11 @@ ninja.data = [{
           window.location.href = "/blog/2015/formatting-and-links/";
         
       },
-    },{id: "news-a-new-paper-co-located-olci-optical-imagery-and-sar-altimetry-from-sentinel-3-for-enhanced-arctic-spring-sea-ice-surface-classification-got-accepted-at-frontiers-in-remote-sensing",
-          title: 'A new paper ‘Co-located OLCI optical imagery and SAR altimetry from Sentinel-3 for...',
-          description: "",
-          section: "News",},{id: "news-i-attended-the-european-geosciences-union-egu-general-assembly-2024-in-vienna-austria",
+    },{id: "news-i-attended-the-european-geosciences-union-egu-general-assembly-2024-in-vienna-austria",
           title: 'I attended the European Geosciences Union (EGU) General Assembly 2024 in Vienna, Austria....',
+          description: "",
+          section: "News",},{id: "news-a-new-paper-co-located-olci-optical-imagery-and-sar-altimetry-from-sentinel-3-for-enhanced-arctic-spring-sea-ice-surface-classification-got-accepted-at-frontiers-in-remote-sensing",
+          title: 'A new paper ‘Co-located OLCI optical imagery and SAR altimetry from Sentinel-3 for...',
           description: "",
           section: "News",},{id: "news-i-attended-the-30-years-of-progress-in-radar-altimetry-symposium-in-montpellier-france",
           title: 'I attended the “30 Years of Progress in Radar Altimetry” Symposium in Montpellier,...',
