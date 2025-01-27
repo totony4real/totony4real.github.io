@@ -1,1 +1,1 @@
-User-agent: * Disallow: Sitemap: https://totony4real.github.io/al-folio/sitemap.xml
+User-agent: * Disallow: Sitemap: https://totony4real.github.io/sitemap.xml
