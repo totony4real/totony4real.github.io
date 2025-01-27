@@ -440,12 +440,10 @@ ninja.data = [{
           section: "News",},{id: "news-i-attended-the-30-years-of-progress-in-radar-altimetry-symposium-in-montpellier-france",
           title: 'I attended the “30 Years of Progress in Radar Altimetry” Symposium in Montpellier,...',
           description: "",
-          section: "News",},{id: "news-announcement-2",
-          title: 'Announcement_2',
+          section: "News",},{id: "news-a-new-workshop-paper-efficient-model-compression-techniques-with-fishleg-got-accepted-at-neurips-workshop-on-machine-learning-and-compression-2024",
+          title: 'A new workshop paper ‘Efficient Model Compression Techniques with FishLeg’ got accepted at...',
           description: "",
-          section: "News",handler: () => {
-              window.location.href = "/news/announcement_2/";
-            },},{id: "news-a-new-paper-deep-random-features-for-scalable-interpolation-of-spatiotemporal-data-got-accepted-at-iclr-2025",
+          section: "News",},{id: "news-a-new-paper-deep-random-features-for-scalable-interpolation-of-spatiotemporal-data-got-accepted-at-iclr-2025",
           title: 'A new paper ‘Deep Random Features for Scalable Interpolation of Spatiotemporal Data’ got...',
           description: "",
           section: "News",},{id: "projects-project-1",
