@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='#'>Affiliations</a>. Address. Contacts. Motto. Etc.
+subtitle: <a href='#'>PhD Student @ University College London</a>. London, UK. 
 
 profile:
   align: right
@@ -18,8 +18,8 @@ selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 ---
 
-Write your biography here. Tell the world about yourself. Link to your favorite [subreddit](http://reddit.com). You can put a picture in, too. The code is already in, just name your picture `prof_pic.jpg` and put it in the `img/` folder.
+I am currently a second-year PhD student at Department of Earth Sciences at University College London (UCL). I’m supervised by **Dr Michel Tsamados**, **Dr Rosemary Willatt**, **Dr So Takao** and **Prof Marc Deisenroth**. I’m also affiliated with **Data Intensive Science CDT 2023 Cohort** at UCL. 
 
-Put your address / P.O. box / other info right below your picture. You can also disable any of these elements by editing `profile` property of the YAML header of your `_pages/about.md`. Edit `_bibliography/papers.bib` and Jekyll will render your [publications page](/al-folio/publications/) automatically.
+Before my PhD, I completed my undergraduate degree in the Department of Statistical Science at UCL. My undergraduate thesis is about **Graph-Based Semi-Supervised Learning with (Bi-) Harmonic Functions and Gaussian Random Fields**. 
 
-Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them.
+My research focuses on **sea ice remote sensing**, leveraging **remote sensing**, **machine learning**, and **statistical learning** techniques to advance our understanding of polar regions and climate change.
