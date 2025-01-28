@@ -5,4 +5,4 @@ inline: true
 related_posts: false
 ---
 
-A new paper **‘CEnhanced sea ice classification for ICESat-2 using combined unsupervised and supervised machine learning’** got accepted at ***Remote Sensing of Environment***! 🎉
+A new paper **‘Enhanced sea ice classification for ICESat-2 using combined unsupervised and supervised machine learning’** got accepted at ***Remote Sensing of Environment***! 🎉
