@@ -450,14 +450,7 @@ ninja.data = [{
         title: 'email',
         section: 'Socials',
         handler: () => {
-          window.open("mailto:%79%6F%75@%65%78%61%6D%70%6C%65.%63%6F%6D", "_blank");
-        },
-      },{
-        id: 'social-inspire',
-        title: 'Inspire HEP',
-        section: 'Socials',
-        handler: () => {
-          window.open("https://inspirehep.net/authors/1010907", "_blank");
+          window.open("mailto:%77%65%69%62%69%6E.%63%68%65%6E.%32%33@%75%63%6C.%61%63.%75%6B", "_blank");
         },
       },{
         id: 'social-rss',
