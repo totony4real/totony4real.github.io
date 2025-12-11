@@ -11,14 +11,17 @@
   const config = {
     particleCountDesktop: 90,
     particleCountMobile: 45,
-    connectionDistance: 120,
-    mouseInteractionRadius: 150,
+    connectionDistance: 150, // Increased for more connections
+    mouseInteractionRadius: 200, // Increased interaction area
     animationSpeed: 0.2,
-    particleMinSize: 2,
-    particleMaxSize: 4,
+    particleMinSize: 2.5,
+    particleMaxSize: 5,
     driftSpeed: { min: 0.1, max: 0.3 },
     directionChangeInterval: { min: 200, max: 300 },
   };
+
+  // Animation state
+  let animationTime = 0;
 
   // State
   let canvas, ctx;
@@ -28,21 +31,27 @@
   let currentTheme = "light";
   let isTabVisible = true;
 
-  // Color schemes
+  // Color schemes - Aurora themed
   const colors = {
     light: {
       primary: "#0a2463",
       secondary: "#ffffff",
       accent: "#2698ba",
       glow: "#00d9ff",
-      connection: "rgba(10, 36, 99, 0.15)",
+      aurora1: "#2698ba",
+      aurora2: "#4ecca3",
+      aurora3: "#00d9ff",
+      connection: "rgba(38, 152, 186, 0.3)", // More visible
     },
     dark: {
       primary: "#00d9ff",
       secondary: "#ffffff",
       accent: "#4ecca3",
       glow: "#2698ba",
-      connection: "rgba(0, 217, 255, 0.2)",
+      aurora1: "#00d9ff",
+      aurora2: "#4ecca3",
+      aurora3: "#2698ba",
+      connection: "rgba(0, 217, 255, 0.4)", // More visible
     },
   };
 
@@ -84,10 +93,13 @@
       }
 
       // Boundary check - gentle wrap around
-      if (this.x < -10) this.x = canvas.width + 10;
-      if (this.x > canvas.width + 10) this.x = -10;
-      if (this.y < -10) this.y = canvas.height + 10;
-      if (this.y > canvas.height + 10) this.y = -10;
+      const width = canvas.displayWidth || canvas.width;
+      const height = canvas.displayHeight || canvas.height;
+
+      if (this.x < -10) this.x = width + 10;
+      if (this.x > width + 10) this.x = -10;
+      if (this.y < -10) this.y = height + 10;
+      if (this.y > height + 10) this.y = -10;
     }
 
     draw() {
@@ -107,25 +119,92 @@
         ? 1 - distanceToMouse / config.mouseInteractionRadius
         : 0;
 
-      // Draw particle
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      // Enhanced aurora glow effect when near mouse
+      if (isNearMouse && glowIntensity > 0.2) {
+        // Outer glow (largest)
+        const outerGlow = ctx.createRadialGradient(
+          this.x,
+          this.y,
+          0,
+          this.x,
+          this.y,
+          this.size * 8,
+        );
+        outerGlow.addColorStop(0, `${palette.aurora1}${Math.floor(glowIntensity * 100).toString(16).padStart(2, '0')}`);
+        outerGlow.addColorStop(0.3, `${palette.aurora2}${Math.floor(glowIntensity * 60).toString(16).padStart(2, '0')}`);
+        outerGlow.addColorStop(0.6, `${palette.aurora3}${Math.floor(glowIntensity * 30).toString(16).padStart(2, '0')}`);
+        outerGlow.addColorStop(1, "transparent");
 
-      if (isNearMouse && glowIntensity > 0.3) {
-        // Aurora glow effect
-        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
-        gradient.addColorStop(0, palette.glow);
-        gradient.addColorStop(0.5, palette.accent);
-        gradient.addColorStop(1, "transparent");
-        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 8, 0, Math.PI * 2);
+        ctx.fillStyle = outerGlow;
+        ctx.fill();
+
+        // Middle glow
+        const middleGlow = ctx.createRadialGradient(
+          this.x,
+          this.y,
+          0,
+          this.x,
+          this.y,
+          this.size * 4,
+        );
+        middleGlow.addColorStop(0, `${palette.glow}${Math.floor(glowIntensity * 180).toString(16).padStart(2, '0')}`);
+        middleGlow.addColorStop(0.5, `${palette.accent}${Math.floor(glowIntensity * 120).toString(16).padStart(2, '0')}`);
+        middleGlow.addColorStop(1, "transparent");
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+        ctx.fillStyle = middleGlow;
         ctx.fill();
       }
 
-      // Main particle
-      const alpha = 0.6 + glowIntensity * 0.4;
-      ctx.fillStyle = isNearMouse ? palette.glow : palette.primary;
+      // Main particle with aurora effect
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+
+      if (isNearMouse) {
+        // Aurora gradient for the particle itself
+        const particleGradient = ctx.createRadialGradient(
+          this.x,
+          this.y,
+          0,
+          this.x,
+          this.y,
+          this.size,
+        );
+        particleGradient.addColorStop(0, palette.glow);
+        particleGradient.addColorStop(0.6, palette.accent);
+        particleGradient.addColorStop(1, palette.aurora2);
+        ctx.fillStyle = particleGradient;
+      } else {
+        // Subtle gradient for inactive particles
+        const inactiveGradient = ctx.createRadialGradient(
+          this.x,
+          this.y,
+          0,
+          this.x,
+          this.y,
+          this.size,
+        );
+        inactiveGradient.addColorStop(0, palette.primary);
+        inactiveGradient.addColorStop(1, palette.accent);
+        ctx.fillStyle = inactiveGradient;
+      }
+
+      const alpha = 0.7 + glowIntensity * 0.3;
       ctx.globalAlpha = alpha;
       ctx.fill();
+
+      // Add bright core
+      if (isNearMouse && glowIntensity > 0.5) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = palette.secondary;
+        ctx.globalAlpha = glowIntensity;
+        ctx.fill();
+      }
+
       ctx.globalAlpha = 1;
     }
   }
@@ -142,8 +221,13 @@
 
     // Add event listeners
     window.addEventListener("resize", resizeCanvas);
+
+    // Listen to both canvas and container for mouse events
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseleave", handleMouseLeave);
+    canvas.parentElement.addEventListener("mousemove", handleMouseMove);
+    canvas.parentElement.addEventListener("mouseleave", handleMouseLeave);
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return true;
@@ -156,16 +240,25 @@
     const container = canvas.parentElement;
     const dpr = window.devicePixelRatio || 1;
 
+    // Get the actual dimensions
+    const rect = container.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
     // Set display size
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
 
     // Set actual size in memory (scaled for retina)
-    canvas.width = container.offsetWidth * dpr;
-    canvas.height = container.offsetHeight * dpr;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
 
     // Scale context to ensure correct drawing operations
     ctx.scale(dpr, dpr);
+
+    // Store display dimensions for particle calculations
+    canvas.displayWidth = width;
+    canvas.displayHeight = height;
 
     // Regenerate particles on resize
     initParticles();
@@ -179,11 +272,15 @@
     const isMobile = window.innerWidth < 768;
     const particleCount = isMobile ? config.particleCountMobile : config.particleCountDesktop;
 
-    const cols = Math.ceil(Math.sqrt(particleCount * (canvas.width / canvas.height)));
+    // Use display dimensions for calculations
+    const width = canvas.displayWidth || canvas.width;
+    const height = canvas.displayHeight || canvas.height;
+
+    const cols = Math.ceil(Math.sqrt(particleCount * (width / height)));
     const rows = Math.ceil(particleCount / cols);
 
-    const spacingX = canvas.width / (cols + 1);
-    const spacingY = canvas.height / (rows + 1);
+    const spacingX = width / (cols + 1);
+    const spacingY = height / (rows + 1);
 
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
@@ -200,10 +297,12 @@
       }
       if (particles.length >= particleCount) break;
     }
+
+    console.log(`Initialized ${particles.length} particles in ${width}x${height} canvas`);
   }
 
   /**
-   * Draw connections between nearby particles
+   * Draw connections between nearby particles with aurora effects
    */
   function drawConnections() {
     const palette = colors[currentTheme];
@@ -216,10 +315,12 @@
 
         if (distance < config.connectionDistance) {
           // Calculate opacity based on distance (neural network weight visualization)
-          const opacity = 1 - distance / config.connectionDistance;
+          const baseOpacity = 1 - distance / config.connectionDistance;
 
           // Check if either particle is near mouse
           let mouseBoost = 0;
+          let nearestDist = Infinity;
+
           if (mouse.x !== null && mouse.y !== null) {
             const dist1 = Math.sqrt(
               Math.pow(particles[i].x - mouse.x, 2) + Math.pow(particles[i].y - mouse.y, 2),
@@ -228,34 +329,99 @@
               Math.pow(particles[j].x - mouse.x, 2) + Math.pow(particles[j].y - mouse.y, 2),
             );
 
-            if (
-              dist1 < config.mouseInteractionRadius ||
-              dist2 < config.mouseInteractionRadius
-            ) {
-              mouseBoost = 0.5;
+            nearestDist = Math.min(dist1, dist2);
+
+            if (nearestDist < config.mouseInteractionRadius) {
+              mouseBoost = 1 - nearestDist / config.mouseInteractionRadius;
             }
           }
 
-          // Draw connection
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
+          // Pulsing effect based on animation time
+          const pulsePhase = (animationTime * 0.002 + (i + j) * 0.1) % (Math.PI * 2);
+          const pulse = Math.sin(pulsePhase) * 0.3 + 0.7;
 
-          if (mouseBoost > 0) {
-            // Aurora glow on connections
+          if (mouseBoost > 0.1) {
+            // Enhanced aurora effect on active connections
+
+            // Draw glow layers for depth
+            for (let layer = 3; layer > 0; layer--) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+
+              // Aurora gradient along the line
+              const gradient = ctx.createLinearGradient(
+                particles[i].x,
+                particles[i].y,
+                particles[j].x,
+                particles[j].y,
+              );
+
+              const alpha1 = Math.floor((mouseBoost * baseOpacity * 255) / (layer * 1.5));
+              const alpha2 = Math.floor((mouseBoost * baseOpacity * 200) / (layer * 1.5));
+              const alpha3 = Math.floor((mouseBoost * baseOpacity * 255) / (layer * 1.5));
+
+              gradient.addColorStop(0, `${palette.aurora1}${alpha1.toString(16).padStart(2, '0')}`);
+              gradient.addColorStop(0.5, `${palette.aurora2}${alpha2.toString(16).padStart(2, '0')}`);
+              gradient.addColorStop(1, `${palette.aurora3}${alpha3.toString(16).padStart(2, '0')}`);
+
+              ctx.strokeStyle = gradient;
+              ctx.lineWidth = (3 - layer + 1) * mouseBoost * 1.5;
+              ctx.stroke();
+            }
+
+            // Bright core line
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
             ctx.strokeStyle = palette.glow;
-            ctx.lineWidth = 1.5;
-            ctx.globalAlpha = opacity * 0.6 + mouseBoost;
-          } else {
-            ctx.strokeStyle = palette.connection.includes("rgba")
-              ? palette.connection
-              : palette.primary;
-            ctx.lineWidth = 1;
-            ctx.globalAlpha = opacity * 0.4;
-          }
+            ctx.lineWidth = 1.5 * mouseBoost;
+            ctx.globalAlpha = mouseBoost * pulse;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
 
-          ctx.stroke();
-          ctx.globalAlpha = 1;
+            // Flowing particles along connections
+            if (mouseBoost > 0.5) {
+              const flowProgress = (animationTime * 0.003 + (i + j) * 0.05) % 1;
+              const flowX = particles[i].x + (particles[j].x - particles[i].x) * flowProgress;
+              const flowY = particles[i].y + (particles[j].y - particles[i].y) * flowProgress;
+
+              ctx.beginPath();
+              ctx.arc(flowX, flowY, 2, 0, Math.PI * 2);
+
+              const flowGradient = ctx.createRadialGradient(flowX, flowY, 0, flowX, flowY, 8);
+              flowGradient.addColorStop(0, palette.glow);
+              flowGradient.addColorStop(0.5, palette.aurora2);
+              flowGradient.addColorStop(1, "transparent");
+
+              ctx.fillStyle = flowGradient;
+              ctx.globalAlpha = mouseBoost;
+              ctx.fill();
+              ctx.globalAlpha = 1;
+            }
+          } else {
+            // Regular connection (more visible than before)
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+
+            // Subtle gradient on inactive connections too
+            const gradient = ctx.createLinearGradient(
+              particles[i].x,
+              particles[i].y,
+              particles[j].x,
+              particles[j].y,
+            );
+
+            const alpha = Math.floor(baseOpacity * 120 * pulse);
+            gradient.addColorStop(0, `${palette.accent}${alpha.toString(16).padStart(2, '0')}`);
+            gradient.addColorStop(0.5, `${palette.primary}${alpha.toString(16).padStart(2, '0')}`);
+            gradient.addColorStop(1, `${palette.accent}${alpha.toString(16).padStart(2, '0')}`);
+
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
         }
       }
     }
@@ -270,8 +436,15 @@
       return;
     }
 
+    // Increment animation time for pulsing effects
+    animationTime++;
+
+    // Use display dimensions for clearing
+    const width = canvas.displayWidth || canvas.width;
+    const height = canvas.displayHeight || canvas.height;
+
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, width, height);
 
     // Draw connections first (behind particles)
     drawConnections();
