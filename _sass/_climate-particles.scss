@@ -15,15 +15,14 @@
 }
 
 .particles-container {
-  position: relative;
-  overflow: visible; // Changed from hidden to allow proper rendering
-  min-height: 100vh; // Ensure canvas has height to work with
-
-  // Ensure all child elements are above particles
-  > * {
-    position: relative;
-    z-index: 1;
-  }
+  position: fixed; // Fixed to cover full viewport
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: visible;
+  pointer-events: none; // Don't block page interactions
+  z-index: -1; // Behind all content
 
   // Explicitly set canvas behind
   > canvas {

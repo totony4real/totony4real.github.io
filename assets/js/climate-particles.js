@@ -9,13 +9,13 @@
 
   // Configuration
   const config = {
-    particleCountDesktop: 90,
-    particleCountMobile: 45,
-    connectionDistance: 150, // Increased for more connections
-    mouseInteractionRadius: 200, // Increased interaction area
+    particleCountDesktop: 40, // Reduced from 90 - much sparser
+    particleCountMobile: 20, // Reduced from 45
+    connectionDistance: 200, // Increased to maintain connectivity
+    mouseInteractionRadius: 250, // Larger area for line effects
     animationSpeed: 0.2,
-    particleMinSize: 2.5,
-    particleMaxSize: 5,
+    particleMinSize: 1, // Much smaller particles
+    particleMaxSize: 1.5, // Subtle dots
     driftSpeed: { min: 0.1, max: 0.3 },
     directionChangeInterval: { min: 200, max: 300 },
   };
@@ -119,92 +119,21 @@
         ? 1 - distanceToMouse / config.mouseInteractionRadius
         : 0;
 
-      // Enhanced aurora glow effect when near mouse
-      if (isNearMouse && glowIntensity > 0.2) {
-        // Outer glow (largest)
-        const outerGlow = ctx.createRadialGradient(
-          this.x,
-          this.y,
-          0,
-          this.x,
-          this.y,
-          this.size * 8,
-        );
-        outerGlow.addColorStop(0, `${palette.aurora1}${Math.floor(glowIntensity * 100).toString(16).padStart(2, '0')}`);
-        outerGlow.addColorStop(0.3, `${palette.aurora2}${Math.floor(glowIntensity * 60).toString(16).padStart(2, '0')}`);
-        outerGlow.addColorStop(0.6, `${palette.aurora3}${Math.floor(glowIntensity * 30).toString(16).padStart(2, '0')}`);
-        outerGlow.addColorStop(1, "transparent");
-
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * 8, 0, Math.PI * 2);
-        ctx.fillStyle = outerGlow;
-        ctx.fill();
-
-        // Middle glow
-        const middleGlow = ctx.createRadialGradient(
-          this.x,
-          this.y,
-          0,
-          this.x,
-          this.y,
-          this.size * 4,
-        );
-        middleGlow.addColorStop(0, `${palette.glow}${Math.floor(glowIntensity * 180).toString(16).padStart(2, '0')}`);
-        middleGlow.addColorStop(0.5, `${palette.accent}${Math.floor(glowIntensity * 120).toString(16).padStart(2, '0')}`);
-        middleGlow.addColorStop(1, "transparent");
-
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
-        ctx.fillStyle = middleGlow;
-        ctx.fill();
-      }
-
-      // Main particle with aurora effect
+      // Very subtle particles - just tiny dots
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
 
-      if (isNearMouse) {
-        // Aurora gradient for the particle itself
-        const particleGradient = ctx.createRadialGradient(
-          this.x,
-          this.y,
-          0,
-          this.x,
-          this.y,
-          this.size,
-        );
-        particleGradient.addColorStop(0, palette.glow);
-        particleGradient.addColorStop(0.6, palette.accent);
-        particleGradient.addColorStop(1, palette.aurora2);
-        ctx.fillStyle = particleGradient;
+      if (isNearMouse && glowIntensity > 0.3) {
+        // Slightly brighter when near mouse
+        ctx.fillStyle = palette.glow;
+        ctx.globalAlpha = 0.6 + glowIntensity * 0.4;
       } else {
-        // Subtle gradient for inactive particles
-        const inactiveGradient = ctx.createRadialGradient(
-          this.x,
-          this.y,
-          0,
-          this.x,
-          this.y,
-          this.size,
-        );
-        inactiveGradient.addColorStop(0, palette.primary);
-        inactiveGradient.addColorStop(1, palette.accent);
-        ctx.fillStyle = inactiveGradient;
+        // Very subtle when idle
+        ctx.fillStyle = palette.primary;
+        ctx.globalAlpha = 0.3;
       }
 
-      const alpha = 0.7 + glowIntensity * 0.3;
-      ctx.globalAlpha = alpha;
       ctx.fill();
-
-      // Add bright core
-      if (isNearMouse && glowIntensity > 0.5) {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
-        ctx.fillStyle = palette.secondary;
-        ctx.globalAlpha = glowIntensity;
-        ctx.fill();
-      }
-
       ctx.globalAlpha = 1;
     }
   }
@@ -222,11 +151,9 @@
     // Add event listeners
     window.addEventListener("resize", resizeCanvas);
 
-    // Listen to both canvas and container for mouse events
-    canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("mouseleave", handleMouseLeave);
-    canvas.parentElement.addEventListener("mousemove", handleMouseMove);
-    canvas.parentElement.addEventListener("mouseleave", handleMouseLeave);
+    // Listen to document for mouse events (since container has pointer-events: none)
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeave);
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -302,7 +229,8 @@
   }
 
   /**
-   * Draw connections between nearby particles with aurora effects
+   * Draw connections with emphasis on mouse proximity
+   * Lines get thicker and show aurora colors near cursor
    */
   function drawConnections() {
     const palette = colors[currentTheme];
@@ -314,37 +242,50 @@
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < config.connectionDistance) {
-          // Calculate opacity based on distance (neural network weight visualization)
+          // Calculate opacity based on distance (neural network weight)
           const baseOpacity = 1 - distance / config.connectionDistance;
 
-          // Check if either particle is near mouse
-          let mouseBoost = 0;
-          let nearestDist = Infinity;
+          // Calculate distance from line to mouse (closest point on line)
+          let lineProximity = 0;
 
           if (mouse.x !== null && mouse.y !== null) {
-            const dist1 = Math.sqrt(
-              Math.pow(particles[i].x - mouse.x, 2) + Math.pow(particles[i].y - mouse.y, 2),
-            );
-            const dist2 = Math.sqrt(
-              Math.pow(particles[j].x - mouse.x, 2) + Math.pow(particles[j].y - mouse.y, 2),
+            // Find closest point on line segment to mouse
+            const lineLength = distance;
+            const t = Math.max(
+              0,
+              Math.min(
+                1,
+                ((mouse.x - particles[i].x) * (particles[j].x - particles[i].x) +
+                  (mouse.y - particles[i].y) * (particles[j].y - particles[i].y)) /
+                  (lineLength * lineLength),
+              ),
             );
 
-            nearestDist = Math.min(dist1, dist2);
+            const closestX = particles[i].x + t * (particles[j].x - particles[i].x);
+            const closestY = particles[i].y + t * (particles[j].y - particles[i].y);
 
-            if (nearestDist < config.mouseInteractionRadius) {
-              mouseBoost = 1 - nearestDist / config.mouseInteractionRadius;
+            const distToLine = Math.sqrt(
+              Math.pow(mouse.x - closestX, 2) + Math.pow(mouse.y - closestY, 2),
+            );
+
+            if (distToLine < config.mouseInteractionRadius) {
+              lineProximity = 1 - distToLine / config.mouseInteractionRadius;
             }
           }
 
-          // Pulsing effect based on animation time
+          // Pulsing effect
           const pulsePhase = (animationTime * 0.002 + (i + j) * 0.1) % (Math.PI * 2);
-          const pulse = Math.sin(pulsePhase) * 0.3 + 0.7;
+          const pulse = Math.sin(pulsePhase) * 0.2 + 0.8;
 
-          if (mouseBoost > 0.1) {
-            // Enhanced aurora effect on active connections
+          // Calculate line thickness based on proximity
+          const baseWidth = 0.8;
+          const maxWidth = 6;
+          const lineWidth = baseWidth + lineProximity * (maxWidth - baseWidth);
 
-            // Draw glow layers for depth
-            for (let layer = 3; layer > 0; layer--) {
+          // Draw multi-layer aurora effect for lines near cursor
+          if (lineProximity > 0.05) {
+            // Draw glow layers (bigger to smaller)
+            for (let layer = 4; layer > 0; layer--) {
               ctx.beginPath();
               ctx.moveTo(particles[i].x, particles[i].y);
               ctx.lineTo(particles[j].x, particles[j].y);
@@ -357,16 +298,16 @@
                 particles[j].y,
               );
 
-              const alpha1 = Math.floor((mouseBoost * baseOpacity * 255) / (layer * 1.5));
-              const alpha2 = Math.floor((mouseBoost * baseOpacity * 200) / (layer * 1.5));
-              const alpha3 = Math.floor((mouseBoost * baseOpacity * 255) / (layer * 1.5));
+              const alpha1 = Math.floor((lineProximity * baseOpacity * 200) / layer);
+              const alpha2 = Math.floor((lineProximity * baseOpacity * 150) / layer);
+              const alpha3 = Math.floor((lineProximity * baseOpacity * 200) / layer);
 
               gradient.addColorStop(0, `${palette.aurora1}${alpha1.toString(16).padStart(2, '0')}`);
               gradient.addColorStop(0.5, `${palette.aurora2}${alpha2.toString(16).padStart(2, '0')}`);
               gradient.addColorStop(1, `${palette.aurora3}${alpha3.toString(16).padStart(2, '0')}`);
 
               ctx.strokeStyle = gradient;
-              ctx.lineWidth = (3 - layer + 1) * mouseBoost * 1.5;
+              ctx.lineWidth = lineWidth * (1 + (4 - layer) * 0.5);
               ctx.stroke();
             }
 
@@ -374,38 +315,29 @@
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = palette.glow;
-            ctx.lineWidth = 1.5 * mouseBoost;
-            ctx.globalAlpha = mouseBoost * pulse;
+
+            const coreGradient = ctx.createLinearGradient(
+              particles[i].x,
+              particles[i].y,
+              particles[j].x,
+              particles[j].y,
+            );
+            coreGradient.addColorStop(0, palette.glow);
+            coreGradient.addColorStop(0.5, palette.secondary);
+            coreGradient.addColorStop(1, palette.glow);
+
+            ctx.strokeStyle = coreGradient;
+            ctx.lineWidth = lineWidth * 0.5;
+            ctx.globalAlpha = lineProximity * pulse;
             ctx.stroke();
             ctx.globalAlpha = 1;
-
-            // Flowing particles along connections
-            if (mouseBoost > 0.5) {
-              const flowProgress = (animationTime * 0.003 + (i + j) * 0.05) % 1;
-              const flowX = particles[i].x + (particles[j].x - particles[i].x) * flowProgress;
-              const flowY = particles[i].y + (particles[j].y - particles[i].y) * flowProgress;
-
-              ctx.beginPath();
-              ctx.arc(flowX, flowY, 2, 0, Math.PI * 2);
-
-              const flowGradient = ctx.createRadialGradient(flowX, flowY, 0, flowX, flowY, 8);
-              flowGradient.addColorStop(0, palette.glow);
-              flowGradient.addColorStop(0.5, palette.aurora2);
-              flowGradient.addColorStop(1, "transparent");
-
-              ctx.fillStyle = flowGradient;
-              ctx.globalAlpha = mouseBoost;
-              ctx.fill();
-              ctx.globalAlpha = 1;
-            }
           } else {
-            // Regular connection (more visible than before)
+            // Inactive/subtle lines
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
 
-            // Subtle gradient on inactive connections too
+            // Subtle gradient
             const gradient = ctx.createLinearGradient(
               particles[i].x,
               particles[i].y,
@@ -413,13 +345,13 @@
               particles[j].y,
             );
 
-            const alpha = Math.floor(baseOpacity * 120 * pulse);
+            const alpha = Math.floor(baseOpacity * 80 * pulse);
             gradient.addColorStop(0, `${palette.accent}${alpha.toString(16).padStart(2, '0')}`);
             gradient.addColorStop(0.5, `${palette.primary}${alpha.toString(16).padStart(2, '0')}`);
             gradient.addColorStop(1, `${palette.accent}${alpha.toString(16).padStart(2, '0')}`);
 
             ctx.strokeStyle = gradient;
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = baseWidth;
             ctx.stroke();
           }
         }
@@ -521,10 +453,8 @@
       cancelAnimationFrame(animationId);
     }
     window.removeEventListener("resize", resizeCanvas);
-    if (canvas) {
-      canvas.removeEventListener("mousemove", handleMouseMove);
-      canvas.removeEventListener("mouseleave", handleMouseLeave);
-    }
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseleave", handleMouseLeave);
     document.removeEventListener("visibilitychange", handleVisibilityChange);
   }
 
