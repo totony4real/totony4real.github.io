@@ -2,6 +2,10 @@
 layout: default
 ---
 <div class="post">
+  {% if site.enable_climate_particles %}
+    <div class="particles-container">
+      <canvas id="climate-particles-canvas"></canvas>
+  {% endif %}
   <header class="post-header">
     <h1 class="post-title">
       {% if site.title == 'blank' %}
@@ -77,4 +81,7 @@ layout: default
       {% include newsletter.liquid center=true %}
     {% endif %}
   </article>
+  {% if site.enable_climate_particles %}
+    </div> <!-- Close particles-container -->
+  {% endif %}
 </div>

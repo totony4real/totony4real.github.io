@@ -30,6 +30,11 @@ let applyTheme = () => {
   setGiscusTheme(theme);
   setSearchTheme(theme);
 
+  // if climate particles is not defined, do nothing
+  if (typeof updateClimateParticlesTheme !== "undefined") {
+    updateClimateParticlesTheme(theme);
+  }
+
   // if mermaid is not defined, do nothing
   if (typeof mermaid !== "undefined") {
     setMermaidTheme(theme);

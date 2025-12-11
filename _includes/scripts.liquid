@@ -242,6 +242,11 @@
   <script defer src="{{ '/assets/js/progress-bar.js' | relative_url | bust_file_cache }}" type="text/javascript"></script>
 {% endif %}
 
+{% if site.enable_climate_particles %}
+  <!-- Climate Particles -->
+  <script defer src="{{ '/assets/js/climate-particles.js' | relative_url | bust_file_cache }}" type="text/javascript"></script>
+{% endif %}
+
 {% if page.images %}
   <!-- Image Layouts -->
   {% if page.images.compare %}

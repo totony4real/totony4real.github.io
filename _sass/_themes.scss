@@ -42,6 +42,13 @@
   --global-danger-block-text: #600;
   --global-danger-block-title: #c00;
 
+  // Climate particles colors (light theme)
+  --particle-primary: #0a2463;
+  --particle-secondary: #ffffff;
+  --particle-accent: #2698ba;
+  --particle-glow: #00d9ff;
+  --particle-connection: rgba(10, 36, 99, 0.15);
+
   #light-toggle-system {
     padding-left: 10px;
     padding-top: 12px;
@@ -111,6 +118,13 @@ html[data-theme="dark"] {
   --global-danger-block-bg: #ffe0e0;
   --global-danger-block-text: #600;
   --global-danger-block-title: #c00;
+
+  // Climate particles colors (dark theme)
+  --particle-primary: #00d9ff;
+  --particle-secondary: #ffffff;
+  --particle-accent: #4ecca3;
+  --particle-glow: #2698ba;
+  --particle-connection: rgba(0, 217, 255, 0.2);
 
   .only-light {
     display: none;
