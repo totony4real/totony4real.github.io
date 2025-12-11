@@ -57,14 +57,14 @@
         }
 
         .particles-container {
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             overflow: visible;
-            min-height: 100vh;
-        }
-
-        .particles-container > * {
-            position: relative;
-            z-index: 1;
+            pointer-events: none;
+            z-index: -1;
         }
 
         .particles-container > canvas {
@@ -130,8 +130,9 @@
 
     <div class="particles-container">
         <canvas id="climate-particles-canvas"></canvas>
+    </div>
 
-        <div class="content">
+    <div class="content">
             <h1>Weibin Chen</h1>
             <p class="subtitle">PhD Student @ University College London</p>
 
@@ -161,7 +162,6 @@
                 <p>Neural Networks for Polar Prediction</p>
             </div>
         </div>
-    </div>
 
     <script>
         // Simple theme toggle
