@@ -164,13 +164,11 @@
    * Resize canvas to match container
    */
   function resizeCanvas() {
-    const container = canvas.parentElement;
     const dpr = window.devicePixelRatio || 1;
 
-    // Get the actual dimensions
-    const rect = container.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
+    // Get viewport dimensions (since container is fixed full-screen)
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
     // Set display size
     canvas.style.width = width + "px";
