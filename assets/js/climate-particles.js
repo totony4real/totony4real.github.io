@@ -195,11 +195,20 @@
   function initParticles() {
     particles = [];
     const isMobile = window.innerWidth < 768;
-    const particleCount = isMobile ? config.particleCountMobile : config.particleCountDesktop;
 
     // Use display dimensions for calculations
     const width = canvas.displayWidth || canvas.width;
     const height = canvas.displayHeight || canvas.height;
+
+    // Calculate particle count based on viewport area to maintain consistent density
+    // Base density: 40 particles for ~1920x1080 viewport (≈ 2M pixels)
+    const baseArea = 1920 * 1080;
+    const currentArea = width * height;
+    const areaRatio = currentArea / baseArea;
+
+    // Scale particle count by area, with min/max limits
+    const baseCount = isMobile ? config.particleCountMobile : config.particleCountDesktop;
+    const particleCount = Math.max(15, Math.min(80, Math.round(baseCount * areaRatio)));
 
     const cols = Math.ceil(Math.sqrt(particleCount * (width / height)));
     const rows = Math.ceil(particleCount / cols);

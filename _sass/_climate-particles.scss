@@ -29,3 +29,85 @@
     z-index: -1 !important;
   }
 }
+
+/**
+ * Enhanced typography for about page with particle effects
+ */
+
+// Name styling with aurora gradient
+.post-title {
+  font-weight: 700 !important;
+  font-size: 3.2rem !important;
+  letter-spacing: -0.02em;
+
+  // Aurora gradient effect
+  [data-theme='dark'] & {
+    background: linear-gradient(135deg, #00d9ff 0%, #4ecca3 50%, #2698ba 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  [data-theme='light'] & {
+    background: linear-gradient(135deg, #0a2463 0%, #2698ba 50%, #00d9ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+// Subtitle styling
+.post-header .desc {
+  font-size: 1.25rem !important;
+  font-weight: 400;
+  margin-top: 0.5rem;
+
+  [data-theme='dark'] & {
+    color: #00d9ff;
+  }
+
+  [data-theme='light'] & {
+    color: #2698ba;
+  }
+
+  a {
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s ease;
+
+    &:hover {
+      [data-theme='dark'] & {
+        border-bottom-color: #4ecca3;
+      }
+
+      [data-theme='light'] & {
+        border-bottom-color: #2698ba;
+      }
+    }
+  }
+}
+
+// Section headers (news, publications, etc.)
+.post h2 {
+  position: relative;
+  padding-bottom: 0.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 2px;
+
+    [data-theme='dark'] & {
+      background: linear-gradient(90deg, #00d9ff, #4ecca3);
+    }
+
+    [data-theme='light'] & {
+      background: linear-gradient(90deg, #2698ba, #4ecca3);
+    }
+  }
+}

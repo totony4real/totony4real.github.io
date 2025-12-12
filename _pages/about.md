@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='#'>PhD Student @ University College London</a>. London, UK. 
+subtitle: PhD Student @ <a href='https://www.ucl.ac.uk/earth-sciences/'>University College London</a>. London, UK. 
 
 profile:
   align: right
