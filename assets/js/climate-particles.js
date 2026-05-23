@@ -1,405 +1,333 @@
 /**
- * Climate Neural Network Particle System
- * A custom particle animation representing ML-driven climate modeling
- * Combines hexagonal grids (ice crystals + ML networks) with organic flow
+ * Slow Weather Dynamics Field
+ * A sparse atmospheric flow background for the AI-for-climate homepage.
  */
 
 (function () {
   "use strict";
 
-  // Configuration
   const config = {
-    particleCountDesktop: 40, // Reduced from 90 - much sparser
-    particleCountMobile: 20, // Reduced from 45
-    connectionDistance: 200, // Increased to maintain connectivity
-    mouseInteractionRadius: 250, // Larger area for line effects
-    animationSpeed: 0.2,
-    particleMinSize: 1, // Much smaller particles
-    particleMaxSize: 1.5, // Subtle dots
-    driftSpeed: { min: 0.1, max: 0.3 },
-    directionChangeInterval: { min: 200, max: 300 },
+    lineCountDesktop: 22,
+    lineCountMobile: 12,
+    particleCountDesktop: 14,
+    particleCountMobile: 8,
+    lineSteps: 90,
+    stepLength: 16,
+    interactionRadius: 230,
+    driftSpeed: 0.00008,
+    fadeInMs: 1200,
+    frameInterval: 1000 / 30,
   };
 
-  // Animation state
-  let animationTime = 0;
+  const colors = {
+    light: {
+      veilTop: "rgba(255, 255, 255, 0.9)",
+      veilBottom: "rgba(238, 250, 252, 0.66)",
+      line: "rgba(38, 152, 186, 0.25)",
+      lineSoft: "rgba(10, 36, 99, 0.12)",
+      glow: "rgba(0, 174, 214, 0.45)",
+      particle: "rgba(0, 142, 168, 0.86)",
+      vortex: "rgba(78, 204, 163, 0.2)",
+    },
+    dark: {
+      veilTop: "rgba(28, 28, 29, 0.74)",
+      veilBottom: "rgba(6, 20, 30, 0.62)",
+      line: "rgba(0, 217, 255, 0.25)",
+      lineSoft: "rgba(78, 204, 163, 0.12)",
+      glow: "rgba(78, 204, 163, 0.48)",
+      particle: "rgba(152, 246, 226, 0.88)",
+      vortex: "rgba(0, 217, 255, 0.2)",
+    },
+  };
 
-  // State
-  let canvas, ctx;
+  let canvas;
+  let ctx;
+  let lines = [];
   let particles = [];
-  let mouse = { x: null, y: null };
   let animationId = null;
   let currentTheme = "light";
   let isTabVisible = true;
+  let isScrolling = false;
+  let scrollTimeout = null;
+  let startTime = performance.now();
+  let lastFrameTime = 0;
+  let mouse = { x: null, y: null };
 
-  // Color schemes - Aurora themed
-  const colors = {
-    light: {
-      primary: "#0a2463",
-      secondary: "#ffffff",
-      accent: "#2698ba",
-      glow: "#00d9ff",
-      aurora1: "#2698ba",
-      aurora2: "#4ecca3",
-      aurora3: "#00d9ff",
-      connection: "rgba(38, 152, 186, 0.3)", // More visible
-    },
-    dark: {
-      primary: "#00d9ff",
-      secondary: "#ffffff",
-      accent: "#4ecca3",
-      glow: "#2698ba",
-      aurora1: "#00d9ff",
-      aurora2: "#4ecca3",
-      aurora3: "#2698ba",
-      connection: "rgba(0, 217, 255, 0.4)", // More visible
-    },
-  };
+  function seededRandom(seed) {
+    const x = Math.sin(seed * 12.9898) * 43758.5453;
+    return x - Math.floor(x);
+  }
 
-  /**
-   * Particle class
-   */
-  class Particle {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-      this.baseX = x;
-      this.baseY = y;
-      this.size = Math.random() * (config.particleMaxSize - config.particleMinSize) + config.particleMinSize;
-      this.vx = (Math.random() - 0.5) * config.driftSpeed.max;
-      this.vy = (Math.random() - 0.5) * config.driftSpeed.max;
-      this.directionTimer = Math.floor(
-        Math.random() * (config.directionChangeInterval.max - config.directionChangeInterval.min) +
-          config.directionChangeInterval.min,
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function easeInOut(t) {
+    return t * t * (3 - 2 * t);
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function getDimensions() {
+    return {
+      width: canvas.displayWidth || window.innerWidth,
+      height: canvas.displayHeight || window.innerHeight,
+    };
+  }
+
+  function buildField() {
+    const { width, height } = getDimensions();
+    const isMobile = width < 768;
+    const lineCount = isMobile ? config.lineCountMobile : config.lineCountDesktop;
+    const particleCount = isMobile ? config.particleCountMobile : config.particleCountDesktop;
+
+    lines = Array.from({ length: lineCount }, (_, index) => {
+      const t = lineCount === 1 ? 0 : index / (lineCount - 1);
+      const lane = lerp(-0.1, 1.1, t);
+      const wobble = (seededRandom(index + 21) - 0.5) * height * 0.16;
+
+      return {
+        seed: index + 1,
+        startX: -width * 0.18 + seededRandom(index + 7) * width * 0.2,
+        startY: lane * height + wobble,
+        phase: seededRandom(index + 31) * Math.PI * 2,
+        alpha: lerp(0.26, 0.54, seededRandom(index + 41)),
+        width: lerp(0.55, 1.15, seededRandom(index + 51)),
+      };
+    });
+
+    particles = Array.from({ length: particleCount }, (_, index) => ({
+      lineIndex: Math.floor(seededRandom(index + 101) * lines.length),
+      progress: seededRandom(index + 111),
+      speed: lerp(0.000045, 0.00011, seededRandom(index + 121)),
+      radius: lerp(1.1, 2.2, seededRandom(index + 131)),
+      phase: seededRandom(index + 141) * Math.PI * 2,
+    }));
+  }
+
+  function vectorAt(x, y, time) {
+    const { width, height } = getDimensions();
+    const nx = x / width;
+    const ny = y / height;
+
+    let vx = 1.05;
+    let vy = -0.22;
+
+    // Broad planetary-wave undulation, kept deliberately gentle.
+    vx += Math.sin(ny * Math.PI * 2.4 + time * 0.42) * 0.22;
+    vy += Math.sin(nx * Math.PI * 2.1 - time * 0.34) * 0.18;
+
+    const vortices = [
+      {
+        x: width * (0.34 + Math.sin(time * 0.17) * 0.035),
+        y: height * (0.68 + Math.cos(time * 0.13) * 0.045),
+        strength: 0.68,
+      },
+      {
+        x: width * (0.72 + Math.cos(time * 0.11) * 0.03),
+        y: height * (0.36 + Math.sin(time * 0.16) * 0.04),
+        strength: -0.5,
+      },
+    ];
+
+    vortices.forEach((vortex) => {
+      const dx = x - vortex.x;
+      const dy = y - vortex.y;
+      const radius = Math.max(width, height) * 0.34;
+      const distSq = dx * dx + dy * dy;
+      const influence = Math.exp(-distSq / (radius * radius));
+      const dist = Math.sqrt(distSq) || 1;
+
+      vx += (-dy / dist) * vortex.strength * influence;
+      vy += (dx / dist) * vortex.strength * influence;
+    });
+
+    if (mouse.x !== null && mouse.y !== null) {
+      const dx = x - mouse.x;
+      const dy = y - mouse.y;
+      const distSq = dx * dx + dy * dy;
+      const radiusSq = config.interactionRadius * config.interactionRadius;
+
+      if (distSq < radiusSq) {
+        const dist = Math.sqrt(distSq) || 1;
+        const influence = easeInOut(1 - dist / config.interactionRadius);
+        vx += (-dy / dist) * influence * 0.38;
+        vy += (dx / dist) * influence * 0.38;
+      }
+    }
+
+    const length = Math.sqrt(vx * vx + vy * vy) || 1;
+    return { x: vx / length, y: vy / length };
+  }
+
+  function traceLine(line, time) {
+    const { width, height } = getDimensions();
+    const drift = ((time * config.driftSpeed + line.phase) % 1) * width * 0.42;
+    const wave = Math.sin(time * 0.24 + line.phase) * height * 0.04;
+    let x = line.startX + drift;
+    let y = line.startY + wave;
+    const points = [];
+
+    for (let i = 0; i < config.lineSteps; i++) {
+      points.push({ x, y });
+      const v = vectorAt(x, y, time);
+      x += v.x * config.stepLength;
+      y += v.y * config.stepLength;
+
+      if (x > width * 1.18 || y < -height * 0.18 || y > height * 1.18) {
+        break;
+      }
+    }
+
+    return points;
+  }
+
+  function distanceToMouse(point) {
+    if (mouse.x === null || mouse.y === null) return 0;
+
+    const dx = point.x - mouse.x;
+    const dy = point.y - mouse.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist >= config.interactionRadius) return 0;
+    return easeInOut(1 - dist / config.interactionRadius);
+  }
+
+  function drawBackground(palette) {
+    const { width, height } = getDimensions();
+    const gradient = ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, palette.veilTop);
+    gradient.addColorStop(1, palette.veilBottom);
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  function drawVortexHints(time, palette) {
+    const { width, height } = getDimensions();
+    const hints = [
+      { x: width * 0.34, y: height * 0.68, radius: Math.min(width, height) * 0.12 },
+      { x: width * 0.72, y: height * 0.36, radius: Math.min(width, height) * 0.1 },
+    ];
+
+    hints.forEach((hint, index) => {
+      ctx.save();
+      ctx.translate(
+        hint.x + Math.sin(time * 0.16 + index) * width * 0.018,
+        hint.y + Math.cos(time * 0.12 + index) * height * 0.018,
       );
-      this.directionCounter = 0;
-      this.connections = [];
-    }
-
-    update() {
-      // Organic drift
-      this.x += this.vx * config.animationSpeed;
-      this.y += this.vy * config.animationSpeed;
-
-      // Periodic direction change
-      this.directionCounter++;
-      if (this.directionCounter >= this.directionTimer) {
-        this.vx = (Math.random() - 0.5) * config.driftSpeed.max;
-        this.vy = (Math.random() - 0.5) * config.driftSpeed.max;
-        this.directionCounter = 0;
-        this.directionTimer = Math.floor(
-          Math.random() * (config.directionChangeInterval.max - config.directionChangeInterval.min) +
-            config.directionChangeInterval.min,
-        );
-      }
-
-      // Boundary check - gentle wrap around
-      const width = canvas.displayWidth || canvas.width;
-      const height = canvas.displayHeight || canvas.height;
-
-      if (this.x < -10) this.x = width + 10;
-      if (this.x > width + 10) this.x = -10;
-      if (this.y < -10) this.y = height + 10;
-      if (this.y > height + 10) this.y = -10;
-    }
-
-    draw() {
-      const palette = colors[currentTheme];
-
-      // Calculate mouse distance for interaction
-      let distanceToMouse = Infinity;
-      if (mouse.x !== null && mouse.y !== null) {
-        const dx = this.x - mouse.x;
-        const dy = this.y - mouse.y;
-        distanceToMouse = Math.sqrt(dx * dx + dy * dy);
-      }
-
-      // Particle glow based on mouse proximity
-      const isNearMouse = distanceToMouse < config.mouseInteractionRadius;
-      const glowIntensity = isNearMouse
-        ? 1 - distanceToMouse / config.mouseInteractionRadius
-        : 0;
-
-      // Very subtle particles - just tiny dots
+      ctx.rotate(time * 0.04 * (index === 0 ? 1 : -1));
+      ctx.strokeStyle = palette.vortex;
+      ctx.lineWidth = 0.8;
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, hint.radius, hint.radius * 0.52, 0, 0.3, Math.PI * 1.74);
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
 
-      if (isNearMouse && glowIntensity > 0.3) {
-        // Slightly brighter when near mouse
-        ctx.fillStyle = palette.glow;
-        ctx.globalAlpha = 0.6 + glowIntensity * 0.4;
-      } else {
-        // Very subtle when idle
-        ctx.fillStyle = palette.primary;
-        ctx.globalAlpha = 0.3;
+  function drawFlowLines(tracedLines, palette) {
+    tracedLines.forEach(({ line, points }) => {
+      if (points.length < 2) return;
+
+      let mouseGlow = 0;
+      for (let i = 0; i < points.length; i += 6) {
+        mouseGlow = Math.max(mouseGlow, distanceToMouse(points[i]));
       }
 
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+
+      ctx.strokeStyle = mouseGlow > 0.02 ? palette.glow : palette.line;
+      ctx.lineWidth = line.width + mouseGlow * 1.1;
+      ctx.globalAlpha = clamp(line.alpha * 0.54 + mouseGlow * 0.42, 0, 0.78);
+      ctx.shadowBlur = mouseGlow * 12;
+      ctx.shadowColor = palette.glow;
+      ctx.stroke();
+    });
+
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+  }
+
+  function drawDataParticles(time, tracedLines, palette) {
+    particles.forEach((particle) => {
+      const tracedLine = tracedLines[particle.lineIndex % tracedLines.length];
+      const points = tracedLine ? tracedLine.points : [];
+      if (points.length < 2) return;
+
+      particle.progress = (particle.progress + particle.speed * 16.67) % 1;
+      const index = Math.floor(particle.progress * (points.length - 1));
+      const point = points[index];
+      const pulse = Math.sin(time * 1.2 + particle.phase) * 0.35 + 0.65;
+      const mouseGlow = distanceToMouse(point);
+      const radius = particle.radius * (0.8 + pulse * 0.5 + mouseGlow);
+
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = palette.particle;
+      ctx.globalAlpha = clamp(0.24 + pulse * 0.24 + mouseGlow * 0.46, 0, 0.95);
+      ctx.shadowBlur = 10 + mouseGlow * 18;
+      ctx.shadowColor = palette.particle;
       ctx.fill();
-      ctx.globalAlpha = 1;
-    }
+    });
+
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
   }
 
-  /**
-   * Initialize canvas
-   */
-  function initCanvas() {
-    canvas = document.getElementById("climate-particles-canvas");
-    if (!canvas) return false;
-
-    ctx = canvas.getContext("2d");
-    resizeCanvas();
-
-    // Add event listeners
-    window.addEventListener("resize", resizeCanvas);
-
-    // Listen to document for mouse events (since container has pointer-events: none)
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseleave", handleMouseLeave);
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return true;
-  }
-
-  /**
-   * Resize canvas to match container
-   */
   function resizeCanvas() {
-    const dpr = window.devicePixelRatio || 1;
-
-    // Get viewport dimensions (since container is fixed full-screen)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    // Set display size
-    canvas.style.width = width + "px";
-    canvas.style.height = height + "px";
-
-    // Set actual size in memory (scaled for retina)
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-
-    // Scale context to ensure correct drawing operations
-    ctx.scale(dpr, dpr);
-
-    // Store display dimensions for particle calculations
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
     canvas.displayWidth = width;
     canvas.displayHeight = height;
 
-    // Regenerate particles on resize
-    initParticles();
+    ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    buildField();
   }
 
-  /**
-   * Initialize particles in hexagonal grid
-   */
-  function initParticles() {
-    particles = [];
-    const isMobile = window.innerWidth < 768;
-
-    // Use display dimensions for calculations
-    const width = canvas.displayWidth || canvas.width;
-    const height = canvas.displayHeight || canvas.height;
-
-    // Calculate particle count based on viewport area to maintain consistent density
-    // Base density: 40 particles for ~1920x1080 viewport (≈ 2M pixels)
-    const baseArea = 1920 * 1080;
-    const currentArea = width * height;
-    const areaRatio = currentArea / baseArea;
-
-    // Scale particle count by area, with min/max limits
-    const baseCount = isMobile ? config.particleCountMobile : config.particleCountDesktop;
-    const particleCount = Math.max(15, Math.min(80, Math.round(baseCount * areaRatio)));
-
-    const cols = Math.ceil(Math.sqrt(particleCount * (width / height)));
-    const rows = Math.ceil(particleCount / cols);
-
-    const spacingX = width / (cols + 1);
-    const spacingY = height / (rows + 1);
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        // Hexagonal offset
-        const offsetX = row % 2 === 0 ? 0 : spacingX / 2;
-
-        // Base position with randomness
-        const x = (col + 1) * spacingX + offsetX + (Math.random() - 0.5) * spacingX * 0.4;
-        const y = (row + 1) * spacingY + (Math.random() - 0.5) * spacingY * 0.4;
-
-        particles.push(new Particle(x, y));
-
-        if (particles.length >= particleCount) break;
-      }
-      if (particles.length >= particleCount) break;
-    }
-
-    console.log(`Initialized ${particles.length} particles in ${width}x${height} canvas`);
-  }
-
-  /**
-   * Draw connections with emphasis on mouse proximity
-   * Lines get thicker and show aurora colors near cursor
-   */
-  function drawConnections() {
-    const palette = colors[currentTheme];
-
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < config.connectionDistance) {
-          // Calculate opacity based on distance (neural network weight)
-          const baseOpacity = 1 - distance / config.connectionDistance;
-
-          // Calculate distance from line to mouse (closest point on line)
-          let lineProximity = 0;
-
-          if (mouse.x !== null && mouse.y !== null) {
-            // Find closest point on line segment to mouse
-            const lineLength = distance;
-            const t = Math.max(
-              0,
-              Math.min(
-                1,
-                ((mouse.x - particles[i].x) * (particles[j].x - particles[i].x) +
-                  (mouse.y - particles[i].y) * (particles[j].y - particles[i].y)) /
-                  (lineLength * lineLength),
-              ),
-            );
-
-            const closestX = particles[i].x + t * (particles[j].x - particles[i].x);
-            const closestY = particles[i].y + t * (particles[j].y - particles[i].y);
-
-            const distToLine = Math.sqrt(
-              Math.pow(mouse.x - closestX, 2) + Math.pow(mouse.y - closestY, 2),
-            );
-
-            if (distToLine < config.mouseInteractionRadius) {
-              lineProximity = 1 - distToLine / config.mouseInteractionRadius;
-            }
-          }
-
-          // Pulsing effect
-          const pulsePhase = (animationTime * 0.002 + (i + j) * 0.1) % (Math.PI * 2);
-          const pulse = Math.sin(pulsePhase) * 0.2 + 0.8;
-
-          // Calculate line thickness based on proximity
-          const baseWidth = 0.8;
-          const maxWidth = 6;
-          const lineWidth = baseWidth + lineProximity * (maxWidth - baseWidth);
-
-          // Draw multi-layer aurora effect for lines near cursor
-          if (lineProximity > 0.05) {
-            // Draw glow layers (bigger to smaller)
-            for (let layer = 4; layer > 0; layer--) {
-              ctx.beginPath();
-              ctx.moveTo(particles[i].x, particles[i].y);
-              ctx.lineTo(particles[j].x, particles[j].y);
-
-              // Aurora gradient along the line
-              const gradient = ctx.createLinearGradient(
-                particles[i].x,
-                particles[i].y,
-                particles[j].x,
-                particles[j].y,
-              );
-
-              const alpha1 = Math.floor((lineProximity * baseOpacity * 200) / layer);
-              const alpha2 = Math.floor((lineProximity * baseOpacity * 150) / layer);
-              const alpha3 = Math.floor((lineProximity * baseOpacity * 200) / layer);
-
-              gradient.addColorStop(0, `${palette.aurora1}${alpha1.toString(16).padStart(2, '0')}`);
-              gradient.addColorStop(0.5, `${palette.aurora2}${alpha2.toString(16).padStart(2, '0')}`);
-              gradient.addColorStop(1, `${palette.aurora3}${alpha3.toString(16).padStart(2, '0')}`);
-
-              ctx.strokeStyle = gradient;
-              ctx.lineWidth = lineWidth * (1 + (4 - layer) * 0.5);
-              ctx.stroke();
-            }
-
-            // Bright core line
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-
-            const coreGradient = ctx.createLinearGradient(
-              particles[i].x,
-              particles[i].y,
-              particles[j].x,
-              particles[j].y,
-            );
-            coreGradient.addColorStop(0, palette.glow);
-            coreGradient.addColorStop(0.5, palette.secondary);
-            coreGradient.addColorStop(1, palette.glow);
-
-            ctx.strokeStyle = coreGradient;
-            ctx.lineWidth = lineWidth * 0.5;
-            ctx.globalAlpha = lineProximity * pulse;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-          } else {
-            // Inactive/subtle lines
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-
-            // Subtle gradient
-            const gradient = ctx.createLinearGradient(
-              particles[i].x,
-              particles[i].y,
-              particles[j].x,
-              particles[j].y,
-            );
-
-            const alpha = Math.floor(baseOpacity * 80 * pulse);
-            gradient.addColorStop(0, `${palette.accent}${alpha.toString(16).padStart(2, '0')}`);
-            gradient.addColorStop(0.5, `${palette.primary}${alpha.toString(16).padStart(2, '0')}`);
-            gradient.addColorStop(1, `${palette.accent}${alpha.toString(16).padStart(2, '0')}`);
-
-            ctx.strokeStyle = gradient;
-            ctx.lineWidth = baseWidth;
-            ctx.stroke();
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Animation loop
-   */
-  function animate() {
-    if (!isTabVisible) {
+  function animate(now) {
+    if (!isTabVisible || isScrolling) {
       animationId = requestAnimationFrame(animate);
       return;
     }
 
-    // Increment animation time for pulsing effects
-    animationTime++;
+    if (now - lastFrameTime < config.frameInterval) {
+      animationId = requestAnimationFrame(animate);
+      return;
+    }
+    lastFrameTime = now;
 
-    // Use display dimensions for clearing
-    const width = canvas.displayWidth || canvas.width;
-    const height = canvas.displayHeight || canvas.height;
+    const palette = colors[currentTheme] || colors.light;
+    const time = (now - startTime) * 0.001;
+    const { width, height } = getDimensions();
+    const tracedLines = lines.map((line) => ({
+      line,
+      points: traceLine(line, time),
+    }));
 
-    // Clear canvas
     ctx.clearRect(0, 0, width, height);
-
-    // Draw connections first (behind particles)
-    drawConnections();
-
-    // Update and draw particles
-    particles.forEach((particle) => {
-      particle.update();
-      particle.draw();
-    });
+    drawBackground(palette);
+    drawVortexHints(time, palette);
+    drawFlowLines(tracedLines, palette);
+    drawDataParticles(time, tracedLines, palette);
 
     animationId = requestAnimationFrame(animate);
   }
 
-  /**
-   * Mouse event handlers
-   */
   function handleMouseMove(event) {
     const rect = canvas.getBoundingClientRect();
     mouse.x = event.clientX - rect.left;
@@ -411,76 +339,80 @@
     mouse.y = null;
   }
 
-  /**
-   * Handle tab visibility
-   */
   function handleVisibilityChange() {
     isTabVisible = !document.hidden;
   }
 
-  /**
-   * Update theme colors
-   */
+  function handleScroll() {
+    isScrolling = true;
+
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout);
+    }
+
+    scrollTimeout = setTimeout(() => {
+      isScrolling = false;
+    }, 160);
+  }
+
   function updateTheme(theme) {
     currentTheme = theme;
   }
 
-  /**
-   * Initialize and start animation
-   */
+  function initCanvas() {
+    canvas = document.getElementById("climate-particles-canvas");
+    if (!canvas) return false;
+
+    ctx = canvas.getContext("2d");
+    currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+
+    resizeCanvas();
+
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeave);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return true;
+  }
+
   function init() {
-    if (!initCanvas()) {
-      console.warn("Climate particles canvas not found");
-      return;
-    }
+    if (!initCanvas()) return;
 
-    // Detect initial theme
-    const htmlElement = document.documentElement;
-    currentTheme = htmlElement.getAttribute("data-theme") || "light";
+    startTime = performance.now();
+    animate(startTime);
 
-    // Initialize particles
-    initParticles();
-
-    // Start animation
-    animate();
-
-    // Fade in effect
     canvas.style.opacity = "0";
-    canvas.style.transition = "opacity 1s ease-in";
+    canvas.style.transition = `opacity ${config.fadeInMs}ms ease`;
     setTimeout(() => {
       canvas.style.opacity = "1";
     }, 100);
   }
 
-  /**
-   * Cleanup
-   */
   function destroy() {
     if (animationId) {
       cancelAnimationFrame(animationId);
     }
+
     window.removeEventListener("resize", resizeCanvas);
+    window.removeEventListener("scroll", handleScroll);
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseleave", handleMouseLeave);
     document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout);
+    }
   }
 
-  /**
-   * Global function for theme updates
-   */
   window.updateClimateParticlesTheme = updateTheme;
 
-  /**
-   * Start when DOM is ready
-   */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
 
-  /**
-   * Cleanup on page unload
-   */
   window.addEventListener("beforeunload", destroy);
 })();

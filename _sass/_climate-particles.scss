@@ -9,7 +9,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1 !important; // Behind content - use negative z-index
+  z-index: 0 !important;
   pointer-events: none !important; // Don't block interactions with content
   opacity: 0; // Start hidden for fade-in effect
 }
@@ -22,11 +22,629 @@
   height: 100vh;
   overflow: visible;
   pointer-events: none; // Don't block page interactions
-  z-index: -1; // Behind all content
+  z-index: 0;
 
-  // Explicitly set canvas behind
   > canvas {
-    z-index: -1 !important;
+    z-index: 0 !important;
+  }
+}
+
+.particles-container + .post {
+  position: relative;
+  z-index: 1;
+}
+
+.climate-home {
+  width: min(1120px, calc(100vw - 2rem));
+  max-width: none;
+  margin: 0.6rem 0 0 50%;
+  transform: translateX(-50%);
+}
+
+.climate-hero {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(1rem, 2.8vw, 2.4rem);
+  align-items: start;
+  min-height: min(76vh, 720px);
+  padding: clamp(1.45rem, 5vw, 4.5rem);
+  border: 1px solid rgba(38, 152, 186, 0.18);
+  border-radius: 34px;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  box-shadow: 0 28px 90px rgba(10, 36, 99, 0.08);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+
+    [data-theme='light'] & {
+      background:
+        radial-gradient(circle at 84% 12%, rgba(78, 204, 163, 0.25), transparent 24%),
+        radial-gradient(circle at 20% 78%, rgba(0, 217, 255, 0.16), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(238, 250, 252, 0.5));
+    }
+
+    [data-theme='dark'] & {
+      background:
+        radial-gradient(circle at 84% 12%, rgba(0, 217, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 20% 78%, rgba(78, 204, 163, 0.12), transparent 32%),
+        linear-gradient(135deg, rgba(25, 34, 39, 0.86), rgba(4, 16, 24, 0.68));
+    }
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    border-radius: 31px;
+    background-image:
+      linear-gradient(rgba(38, 152, 186, 0.075) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(38, 152, 186, 0.06) 1px, transparent 1px),
+      linear-gradient(115deg, transparent 0 42%, rgba(38, 152, 186, 0.08) 42% 43%, transparent 43%),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent);
+    background-size: 72px 72px, 72px 72px, auto, auto;
+    mask-image: linear-gradient(115deg, rgba(0, 0, 0, 0.32), transparent 58%);
+    pointer-events: none;
+  }
+}
+
+.climate-hero__copy {
+  grid-column: 1 / 9;
+  max-width: 760px;
+  position: relative;
+  z-index: 1;
+}
+
+.climate-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  padding: 0.38rem 0.75rem;
+  border: 1px solid rgba(38, 152, 186, 0.24);
+  border-radius: 999px;
+  color: #2698ba;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+
+  &::before {
+    content: '';
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: #4ecca3;
+    box-shadow: 0 0 16px rgba(78, 204, 163, 0.8);
+  }
+
+  [data-theme='dark'] & {
+    color: #9cf6e2;
+    border-color: rgba(78, 204, 163, 0.28);
+    background: rgba(0, 217, 255, 0.04);
+  }
+
+  [data-theme='light'] & {
+    background: rgba(255, 255, 255, 0.56);
+  }
+}
+
+.climate-hero__header {
+  margin-bottom: 1.35rem;
+}
+
+.climate-bio {
+  max-width: 680px;
+  padding: clamp(1rem, 2vw, 1.35rem) 0 0 clamp(1rem, 2vw, 1.35rem);
+  border-left: 1px solid rgba(38, 152, 186, 0.24);
+  font-size: 1.02rem;
+  line-height: 1.78;
+
+  p {
+    max-width: 62ch;
+  }
+
+  [data-theme='dark'] & {
+    border-left-color: rgba(78, 204, 163, 0.22);
+  }
+}
+
+.climate-profile-card {
+  grid-column: 9 / 13;
+  justify-self: end;
+  position: relative;
+  z-index: 1;
+  width: min(100%, 270px);
+  padding: 1rem;
+  border: 1px solid rgba(38, 152, 186, 0.22);
+  border-radius: 30px;
+  isolation: isolate;
+  transform: rotate(1.5deg);
+  box-shadow: 0 24px 65px rgba(10, 36, 99, 0.12);
+
+  [data-theme='light'] & {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.78), rgba(238, 250, 252, 0.52));
+  }
+
+  [data-theme='dark'] & {
+    background: linear-gradient(160deg, rgba(20, 31, 37, 0.82), rgba(6, 20, 30, 0.62));
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+  }
+
+  .figure,
+  figure {
+    margin-bottom: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-top: 1px solid rgba(78, 204, 163, 0.48);
+    border-right: 1px solid rgba(78, 204, 163, 0.48);
+    border-radius: 0 16px 0 0;
+    pointer-events: none;
+  }
+}
+
+.climate-profile-card__orbit {
+  position: absolute;
+  inset: -16px;
+  z-index: -1;
+  border: 1px solid rgba(78, 204, 163, 0.22);
+  border-radius: 42px;
+  transform: rotate(-8deg);
+  pointer-events: none;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 999px;
+  }
+
+  &::before {
+    top: 16%;
+    right: 10%;
+    width: 8px;
+    height: 8px;
+    background: #4ecca3;
+    box-shadow: 0 0 18px rgba(78, 204, 163, 0.8);
+  }
+
+  &::after {
+    bottom: 18%;
+    left: 12%;
+    width: 6px;
+    height: 6px;
+    background: #00d9ff;
+    box-shadow: 0 0 18px rgba(0, 217, 255, 0.7);
+  }
+}
+
+.climate-profile-card__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: none !important;
+}
+
+.climate-profile-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+
+  span {
+    padding: 0.32rem 0.58rem;
+    border: 1px solid rgba(38, 152, 186, 0.2);
+    border-radius: 999px;
+    color: var(--global-text-color);
+    font-size: 0.72rem;
+    line-height: 1;
+    background: rgba(255, 255, 255, 0.32);
+  }
+
+  [data-theme='dark'] & span {
+    border-color: rgba(78, 204, 163, 0.22);
+    background: rgba(0, 217, 255, 0.05);
+  }
+}
+
+.climate-profile-card__status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(38, 152, 186, 0.16);
+
+  span {
+    position: relative;
+    padding-left: 0.72rem;
+    color: rgba(38, 152, 186, 0.82);
+    font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0.42em;
+      left: 0;
+      width: 0.32rem;
+      height: 0.32rem;
+      border-radius: 999px;
+      background: #4ecca3;
+      box-shadow: 0 0 12px rgba(78, 204, 163, 0.8);
+    }
+  }
+
+  [data-theme='dark'] & {
+    border-top-color: rgba(78, 204, 163, 0.18);
+
+    span {
+      color: rgba(156, 246, 226, 0.78);
+    }
+  }
+}
+
+.climate-theme-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  align-self: end;
+  margin-top: clamp(0.8rem, 2vw, 1.8rem);
+}
+
+.climate-theme-card {
+  position: relative;
+  min-height: 132px;
+  padding: 1rem;
+  border: 1px solid rgba(38, 152, 186, 0.16);
+  border-radius: 22px;
+  overflow: hidden;
+
+  [data-theme='light'] & {
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.58), rgba(238, 250, 252, 0.28)),
+      rgba(255, 255, 255, 0.24);
+  }
+
+  [data-theme='dark'] & {
+    border-color: rgba(78, 204, 163, 0.14);
+    background:
+      linear-gradient(135deg, rgba(11, 28, 36, 0.48), rgba(0, 217, 255, 0.05)),
+      rgba(4, 16, 24, 0.22);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -28px;
+    bottom: -46px;
+    width: 120px;
+    height: 120px;
+    border: 1px solid rgba(78, 204, 163, 0.22);
+    border-radius: 999px;
+  }
+
+  span {
+    display: block;
+    margin-bottom: 1.6rem;
+    color: rgba(38, 152, 186, 0.72);
+    font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+  }
+
+  strong {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--global-text-color);
+    font-size: clamp(1rem, 2vw, 1.28rem);
+    line-height: 1.08;
+  }
+
+  p {
+    max-width: 22ch;
+    margin: 0;
+    color: var(--global-text-color-light);
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  [data-theme='dark'] & span {
+    color: rgba(156, 246, 226, 0.72);
+  }
+}
+
+.climate-sections {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.82fr) minmax(0, 1.38fr);
+  gap: clamp(1rem, 2.6vw, 1.7rem);
+  align-items: start;
+  margin-top: clamp(2rem, 6vw, 4rem);
+}
+
+.climate-section {
+  position: relative;
+  margin-top: 0;
+  padding: clamp(1.15rem, 3vw, 2rem);
+  border: 1px solid rgba(38, 152, 186, 0.14);
+  border-radius: 24px;
+  overflow: hidden;
+
+  [data-theme='light'] & {
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: 0 18px 54px rgba(10, 36, 99, 0.06);
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(28, 28, 29, 0.58);
+    border-color: rgba(0, 217, 255, 0.12);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: clamp(1.15rem, 3vw, 2rem);
+    width: 84px;
+    height: 2px;
+    background: linear-gradient(90deg, #2698ba, #4ecca3);
+  }
+}
+
+.climate-section--updates {
+  align-self: stretch;
+}
+
+.climate-section--outputs {
+  grid-column: span 1;
+}
+
+.climate-section__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.3rem;
+
+  h2 {
+    margin: 0;
+    padding: 0;
+    font-family: "Roboto Slab", Georgia, serif;
+    font-size: clamp(1.8rem, 4.4vw, 2.9rem);
+    font-weight: 700;
+    letter-spacing: -0.065em;
+    line-height: 0.9;
+    text-transform: none;
+
+    a {
+      background: linear-gradient(135deg, #0a2463 0%, #2698ba 58%, #4ecca3 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-decoration: none;
+      -webkit-text-fill-color: transparent;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+
+    [data-theme='dark'] & a {
+      background: linear-gradient(135deg, #d9fff8 0%, #00d9ff 45%, #4ecca3 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    &::after {
+      display: none;
+    }
+  }
+}
+
+.climate-section__label {
+  margin: 0;
+  color: rgba(38, 152, 186, 0.76);
+  font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+
+  [data-theme='dark'] & {
+    color: rgba(156, 246, 226, 0.68);
+  }
+}
+
+.climate-section--updates {
+  .news {
+    position: relative;
+  }
+
+  .table-responsive {
+    overflow: visible;
+  }
+
+  table {
+    margin-bottom: 0;
+  }
+
+  tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+    padding: 0.9rem 0 0.9rem 1rem;
+    border-left: 1px solid rgba(38, 152, 186, 0.18);
+
+    &:first-child {
+      padding-top: 0.2rem;
+    }
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+  }
+
+  th,
+  td {
+    display: block;
+    width: auto !important;
+    padding: 0 !important;
+    border: 0;
+  }
+
+  th {
+    position: relative;
+    color: rgba(38, 152, 186, 0.74);
+    font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0.55em;
+      left: -1.18rem;
+      width: 0.42rem;
+      height: 0.42rem;
+      border-radius: 999px;
+      background: #4ecca3;
+      box-shadow: 0 0 12px rgba(78, 204, 163, 0.76);
+    }
+  }
+
+  td {
+    line-height: 1.55;
+  }
+
+  [data-theme='dark'] & tr {
+    border-left-color: rgba(78, 204, 163, 0.16);
+  }
+
+  [data-theme='dark'] & th {
+    color: rgba(156, 246, 226, 0.72);
+  }
+}
+
+.climate-section--outputs {
+  .publications {
+    margin-top: -0.4rem;
+  }
+
+  ol.bibliography {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  ol.bibliography li {
+    position: relative;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid rgba(38, 152, 186, 0.12);
+    border-radius: 18px;
+
+    [data-theme='light'] & {
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    [data-theme='dark'] & {
+      background: rgba(4, 16, 24, 0.18);
+      border-color: rgba(78, 204, 163, 0.1);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 1rem;
+      left: 0;
+      width: 3px;
+      height: calc(100% - 2rem);
+      border-radius: 999px;
+      background: linear-gradient(180deg, #2698ba, #4ecca3);
+    }
+  }
+
+  ol.bibliography li > .row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    align-items: stretch;
+    margin: 0;
+  }
+
+  .abbr {
+    display: none;
+  }
+
+  .col-sm-8 {
+    width: auto;
+    max-width: none;
+    padding: 0;
+  }
+
+  .title {
+    font-size: 1.02rem;
+    line-height: 1.32;
+  }
+}
+
+.climate-social {
+  display: grid;
+  justify-items: center;
+  margin-top: 2.5rem;
+  padding-bottom: 1rem;
+
+  .contact-icons {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(38, 152, 186, 0.14);
+    border-radius: 999px;
+    font-size: 2.2rem;
+
+    [data-theme='light'] & {
+      background: rgba(255, 255, 255, 0.52);
+    }
+
+    [data-theme='dark'] & {
+      background: rgba(4, 16, 24, 0.24);
+      border-color: rgba(78, 204, 163, 0.14);
+    }
+
+    a {
+      display: inline-grid;
+      place-items: center;
+      width: 2.2rem;
+      height: 2.2rem;
+      line-height: 1;
+    }
+  }
+
+  .contact-note {
+    margin-top: 0.7rem;
+    text-align: center;
   }
 }
 
@@ -37,8 +655,9 @@
 // Name styling with aurora gradient
 .post-title {
   font-weight: 700 !important;
-  font-size: 3.2rem !important;
-  letter-spacing: -0.02em;
+  font-size: clamp(3rem, 8vw, 5.8rem) !important;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
 
   // Aurora gradient effect
   [data-theme='dark'] & {
@@ -58,7 +677,7 @@
 
 // Subtitle styling
 .post-header .desc {
-  font-size: 1.25rem !important;
+  font-size: clamp(1.05rem, 2vw, 1.32rem) !important;
   font-weight: 400;
   margin-top: 0.5rem;
 
@@ -109,5 +728,73 @@
     [data-theme='light'] & {
       background: linear-gradient(90deg, #2698ba, #4ecca3);
     }
+  }
+}
+
+@media (max-width: 900px) {
+  .climate-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .climate-hero__copy,
+  .climate-profile-card,
+  .climate-theme-grid {
+    grid-column: 1 / -1;
+  }
+
+  .climate-profile-card {
+    justify-self: start;
+    max-width: 360px;
+    transform: none;
+  }
+
+  .climate-theme-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .climate-sections {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .climate-home {
+    width: min(100%, calc(100vw - 1rem));
+  }
+
+  .climate-hero {
+    padding: 1.35rem;
+    border-radius: 24px;
+  }
+
+  .climate-profile-card {
+    border-radius: 22px;
+  }
+
+  .climate-bio {
+    font-size: 0.96rem;
+  }
+
+  .climate-theme-card {
+    min-height: 112px;
+  }
+
+  .climate-section__head {
+    display: block;
+
+    h2 {
+      margin-top: 0.35rem;
+    }
+  }
+
+  .climate-section--outputs {
+    ol.bibliography li > .row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .climate-profile-card__status {
+    grid-template-columns: 1fr;
   }
 }

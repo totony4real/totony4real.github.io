@@ -22,4 +22,4 @@ I am currently a third-year PhD student at [Department of Earth Sciences](https:
 
 Before my PhD, I completed my undergraduate degree in the Department of Statistical Science at UCL. My undergraduate thesis is about **Graph-Based Semi-Supervised Learning with (Bi-) Harmonic Functions and Gaussian Random Fields**. 
 
-My research focuses on **sea ice remote sensing**, leveraging **remote sensing**, **machine learning**, and **statistical learning** techniques to advance our understanding of polar regions and climate change.
+My PhD focuses on **sea-ice remote sensing**, but I am broadly interested in **machine learning for climate and Earth observation**: building models and methods for noisy, high-dimensional, and nonlinear geophysical data, with applications in **polar satellite observation**, **climate downscaling**, and **geophysical inverse problems**.
